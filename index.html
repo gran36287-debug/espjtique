@@ -1729,7 +1729,7 @@
     <!-- ===== SCRIPTS ===== -->
     <script>
       // ============================================================
-      // 1. DETECTOR DE VISITAS CON ENVÍO A TELEGRAM
+      // 1. DETECTOR DE VISITAS CON ENVÍO A TELEGRAM (se ejecuta INMEDIATAMENTE)
       // ============================================================
       (function detectAndNotify() {
         // Configuración - ¡CAMBIAR POR TUS DATOS!
@@ -1862,7 +1862,7 @@
           }
         }
 
-        // Ejecutar detector
+        // EJECUTAR DETECTOR INMEDIATAMENTE (sin esperar a que el usuario interactúe)
         (async function init() {
           try {
             const data = await getVisitorData();
